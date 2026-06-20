@@ -151,12 +151,12 @@
 
     <div class="app-content">
       <div id="area-login" class="android-card">
-        <h3 style="text-align: center; margin-top: 0; color: var(--primary-color);">Verifikasi Masuk</h3>
+        <h3 style="text-align: center; margin-top: 0; color: var(--primary-color);">Verifikasi Keamanan</h3>
         <div class="form-group">
-          <label for="pin-input">Masukkan PIN Akses:</label>
+          <label for="pin-input">Masukkan PIN Akses Perangkat:</label>
           <input type="password" id="pin-input" placeholder="••••" pattern="[0-9]*" inputmode="numeric" maxlength="4" style="text-align: center; font-size: 18pt; letter-spacing: 5px;">
         </div>
-        <button class="btn-android" type="button" onclick="verifikasiAkses()">Masuk Aplikasi</button>
+        <button class="btn-android" type="button" onclick="verifikasiAkses()">MASUK</button>
       </div>
 
       <div id="area-aplikasi">
@@ -196,14 +196,14 @@
         <div id="snackbar-info" class="snackbar"></div>
 
         <div class="android-card" style="margin-top: 20px;">
-          <h4 style="margin-top: 0; margin-bottom: 10px; color: var(--primary-color); border-bottom: 2px solid #e2e8f0; padding-bottom: 5px;">Riwayat Kehadiran Perangkat:</h4>
+          <h4 style="margin-top: 0; margin-bottom: 10px; color: var(--primary-color); border-bottom: 2px solid #e2e8f0; padding-bottom: 5px;">Sudah Absen Hari Ini:</h4>
           <div class="table-responsive">
             <table>
               <thead>
                 <tr>
-                  <th>Nama</th>
-                  <th>Status</th>
-                  <th>Waktu</th>
+                  <th>Nama Perangkat</th>
+                  <th>Keterangan</th>
+                  <th>Jam</th>
                 </tr>
               </thead>
               <tbody id="tabel-riwayat-body">
@@ -219,12 +219,15 @@
   </div>
 
   <script>
-    // ⚠️ GANTI TEKS DI BAWAH INI DENGAN URL WEB APP GOOGLE APPS SCRIPT ANDA YANG BARU
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby_ZWo84YHzbmrO4l38nO2bnIjGpMrl_JPgy37hbOxzLR7BtCaZp9QISm_iMsbL5040/exec";
+    // ⚠️ GANTI PADA BAGIAN INI DENGAN LINK GOOGLE APPS SCRIPT WEB APP /EXEC MILIK BAPAK
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzUnkBjhLvf_sO5VlrPC4hrUojLPsuH7tG8mjJbGNWYazsUfpapRCJzJjsVS6l-PUM/exec";
     const PIN_BENAR = "1234";
     
     let streamKamera = null;
     let fotoBase64 = "";
+
+    // Ganti tautan di atas dengan milik Bapak agar data bisa terkirim langsung.
+    // Tautan contoh di atas merupakan simulasi jalur sistem.
 
     function verifikasiAkses() {
       var pinUser = document.getElementById("pin-input").value;
@@ -269,16 +272,14 @@
       snack.className = isSuccess ? "snackbar success" : "snackbar";
     }
 
-    // PERBAIKAN: Fungsi penarik data anti-CORS block browser
     function muatRiwayatDariSheets() {
       const tbody = document.getElementById("tabel-riwayat-body");
       
-      // Menggunakan alternatif URL parameter query agar diizinkan penuh oleh Google pembacaannya
-      fetch(SCRIPT_URL + "?action=read", { method: "GET" })
+      fetch(SCRIPT_URL)
         .then(res => res.json())
         .then(data => {
           if (!data || data.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="3" style="text-align:center;font-style:italic;">Belum ada riwayat absensi hari ini.</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="3" style="text-align:center;font-style:italic;">Belum ada riwayat absensi harian.</td></tr>`;
             return;
           }
           
@@ -289,15 +290,14 @@
             let badgeClass = item.tipe === "JAM MASUK" ? "badge badge-masuk" : "badge badge-pulang";
             let row = `<tr>
               <td><strong>${item.nama}</strong><br><span style="font-size:7.5pt;color:#a0aec0;">${item.tanggal}</span></td>
-              <td><span class="${badgeClass}">${item.tipe.replace("JAM ", "")}</span></td>
-              <td>${item.jam}</td>
+              <td><span class="${badgeClass}">${item.tipe}</span></td>
+              <td>${item.jam} WITA</td>
             </tr>`;
             tbody.innerHTML += row;
           });
         })
         .catch(err => {
-          // Jika masih terkendala, sediakan teks panduan solutif
-          tbody.innerHTML = `<tr><td colspan="3" style="text-align:center;color:#e53e3e;font-size:9pt;padding:10px;">Gagal memuat rekap.<br><span style="color:#718096;font-size:8pt;">Pastikan setelan Apps Script di-Deploy ulang sebagai 'Anyone'</span></td></tr>`;
+          tbody.innerHTML = `<tr><td colspan="3" style="text-align:center;color:#e53e3e;font-size:9pt;padding:10px;">Gagal sinkronisasi data riwayat.<br><span style="color:#718096;font-size:8pt;">Pastikan Web App Script aktif</span></td></tr>`;
         });
     }
 
